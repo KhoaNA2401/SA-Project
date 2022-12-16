@@ -11,91 +11,192 @@ import {
     RadioGroup,
     styled,
 } from "@mui/material";
+import { LoadingButton } from '@mui/lab';
 import { Span } from "app/components/Typography";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import FileUpload from "react-mui-fileuploader"
+import db from '../../../utils/firebase-config'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+import { fil } from "date-fns/locale";
+import { async } from "@firebase/util";
 
 const TextField = styled(TextValidator)(() => ({
     width: "100%",
     marginBottom: "16px",
 }));
 
-const SimpleForm = () => {
+const AddProduct = () => {
     const [state, setState] = useState({ date: new Date() });
+    const [files, setFiles] = useState('')
+    const dateFormat = (endDate) => {
+        var dateIn = endDate.toISOString().split('T')[0];
+        var dateFormated = dateIn.split('-').reverse().join('/');
+        return dateFormated;
+    }
+    const [name, setName] = useState("");
+    const [model, setModel] = useState("");
+    const [price, setPrice] = useState("");
+    const [quantity, setQuantity] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [description, setDescription] = useState("");
+    const id = Date.now().toString();
+    const [URL, setURL] = useState("");
+    console.log(URL);
+    const storage = getStorage();
+    // const [file, setFile] = useState(null);
+
+    // const handleChange = async (e) => {
+    //     if (e.target.files[0])
+    //         setFile(e.target.files[0]);
+    // }
+
+    // const handleUpload = async (e) => {
+    //     e.preventDefault();
+    //     const storageRef = ref(storage, file.name);
+    //     const uploadTask = uploadBytesResumable(storageRef, file);
+
+    //     uploadTask.on('state_changed',
+    //         (snapshot) => {
+    //             // Observe state change events such as progress, pause, and resume
+    //             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+    //             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    //             console.log('Upload is ' + progress + '% done');
+    //             switch (snapshot.state) {
+    //                 case 'paused':
+    //                     console.log('Upload is paused');
+    //                     break;
+    //                 case 'running':
+    //                     console.log('Upload is running');
+    //                     break;
+    //             }
+    //         },
+    //         (error) => {
+    //         },
+    //         () => {
+    //             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+    //                 console.log('File available at', downloadURL);
+    //                 setURL(downloadURL);
+    //                 fetch("http://localhost:3000/admin/addproducts", {
+    //                     method: "POST",
+    //                     headers: {
+    //                         "Content-Type": "application/json",
+    //                     },
+    //                     body: JSON.stringify({
+    //                         id: id,
+    //                         name: name,
+    //                         model: model,
+    //                         price: price,
+    //                         quantity: quantity,
+    //                         endDate: dateFormat(endDate),
+    //                         description: description,
+    //                         image: downloadURL,
+    //                     }),
+    //                 })
+    //                     .then((res) => res.json())
+    //                     .then((data) => {
+    //                         setLoading(false);
+    //                         setName('');
+    //                         setModel('');
+    //                         setPrice('');
+    //                         setQuantity('');
+    //                         setEndDate('');
+    //                         setDescription('');
+    //                         setFiles([]);
+    //                     });
+    //             });
+    //         }
+    //     );
+    //     setLoading(false);
+    //     alert("Product Added Successfully");
+    // }
+    const handleChange = (e) => {
+        if (e.target.files[0]) {
+            setFiles(e.target.files[0]);
+        }
+    }
+
+    const handleUpload = (e) => {
+        e.preventDefault();
+        const storageRef = ref(storage, files.name);
+        const uploadTask = uploadBytesResumable(storageRef, files);
+        try {
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                        case 'paused':
+                            console.log('Upload is paused');
+                            break;
+                        case 'running':
+                            console.log('Upload is running');
+                            break;
+                    }
+                },
+                (error) => {
+                },
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        console.log('File available at', downloadURL);
+                        setURL(downloadURL);
+                        fetch("http://localhost:3000/admin/addproducts", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                name: name,
+                                model: model,
+                                price: price,
+                                quantity: quantity,
+                                endDate: dateFormat(endDate),
+                                description: description,
+                                image: downloadURL,
+                            }),
+                        })
+                            .then((res) => res.json())
+                            .then((data) => {
+                                setLoading(false);
+                                setName('');
+                                setModel('');
+                                setPrice('');
+                                setQuantity('');
+                                setEndDate('');
+                                setDescription('');
+                                setFiles([]);
+                            });
+                    });
+                }
+            );
+            alert("Product Added Successfully");
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
-        ValidatorForm.addValidationRule("isPasswordMatch", (value) => {
-            if (value !== state.password) return false;
+    }, [id]);
 
-            return true;
-        });
-        return () => ValidatorForm.removeValidationRule("isPasswordMatch");
-    }, [state.password]);
-
-    const handleSubmit = (event) => {
-        // console.log("submitted");
-        // console.log(event);
-    };
-
-    const handleChange = (event) => {
-        event.persist();
-        setState({ ...state, [event.target.name]: event.target.value });
-    };
-
-    const handleDateChange = (date) => setState({ ...state, date });
-
-    const {
-        username,
-        firstName,
-        creditCard,
-        mobile,
-        password,
-        confirmPassword,
-        gender,
-        date,
-        email,
-    } = state;
-
+    const [loading, setLoading] = useState(false);
     return (
         <div>
-            <ValidatorForm onSubmit={handleSubmit} onError={() => null}>
+            <ValidatorForm onSubmit={handleUpload} onError={() => null} loading={loading}>
                 <Grid container spacing={6}>
                     <Grid item lg={6} md={6} sm={12} xs={12} sx={{ mt: 2 }}>
-                        <TextField
-                            type="text"
-                            name="username"
-                            id="standard-basic"
-                            value={username || ""}
-                            onChange={handleChange}
-                            errorMessages={["this field is required"]}
-                            label="Username (Min length 4, Max length 9)"
-                            validators={["required", "minStringLength: 4", "maxStringLength: 9"]}
-                        />
-
-                        <TextField
-                            type="text"
-                            name="firstName"
-                            label="First Name"
-                            onChange={handleChange}
-                            value={firstName || ""}
-                            validators={["required"]}
-                            errorMessages={["this field is required"]}
-                        />
-
-                        <TextField
-                            type="email"
-                            name="email"
-                            label="Email"
-                            value={email || ""}
-                            onChange={handleChange}
-                            validators={["required", "isEmail"]}
-                            errorMessages={["this field is required", "email is not valid"]}
-                        />
-
+                        <TextField label="Name" onChange={(e) => setName(e.target.value)} name="name" value={name} validators={["required"]} errorMessages={["this field is required"]} />
+                        <TextField label="Model" onChange={(e) => setModel(e.target.value)} name="model" value={model} validators={["required"]} errorMessages={["this field is required"]} />
+                        <TextField label="Price" onChange={(e) => setPrice(e.target.value)} name="price" value={price} validators={["required"]} errorMessages={["this field is required"]} />
+                        <TextField label="Quantity" onChange={(e) => setQuantity(e.target.value)} name="quantity" value={quantity} validators={["required"]} errorMessages={["this field is required"]} />
+                        <TextField label="Description" onChange={(e) => setDescription(e.target.value)} name="description" value={description} validators={["required"]} errorMessages={["this field is required"]} />
+                    </Grid>
+                    <Grid item lg={6} md={6} sm={12} xs={12} sx={{ mt: 2 }}>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
-                                value={date}
-                                onChange={handleDateChange}
+                                value={endDate}
+                                onChange={setEndDate}
                                 renderInput={(props) => (
                                     <TextField
                                         {...props}
@@ -106,90 +207,15 @@ const SimpleForm = () => {
                                 )}
                             />
                         </LocalizationProvider>
-
-                        <TextField
-                            sx={{ mb: 4 }}
-                            type="number"
-                            name="creditCard"
-                            label="Credit Card"
-                            onChange={handleChange}
-                            value={creditCard || ""}
-                            errorMessages={["this field is required"]}
-                            validators={["required", "minStringLength:16", "maxStringLength: 16"]}
-                        />
-                    </Grid>
-
-                    <Grid item lg={6} md={6} sm={12} xs={12} sx={{ mt: 2 }}>
-                        <TextField
-                            type="text"
-                            name="mobile"
-                            value={mobile || ""}
-                            label="Mobile Nubmer"
-                            onChange={handleChange}
-                            validators={["required"]}
-                            errorMessages={["this field is required"]}
-                        />
-                        <TextField
-                            name="password"
-                            type="password"
-                            label="Password"
-                            value={password || ""}
-                            onChange={handleChange}
-                            validators={["required"]}
-                            errorMessages={["this field is required"]}
-                        />
-                        <TextField
-                            type="password"
-                            name="confirmPassword"
-                            onChange={handleChange}
-                            label="Confirm Password"
-                            value={confirmPassword || ""}
-                            validators={["required", "isPasswordMatch"]}
-                            errorMessages={["this field is required", "password didn't match"]}
-                        />
-                        <RadioGroup
-                            row
-                            name="gender"
-                            sx={{ mb: 2 }}
-                            value={gender || ""}
-                            onChange={handleChange}
-                        >
-                            <FormControlLabel
-                                value="Male"
-                                label="Male"
-                                labelPlacement="end"
-                                control={<Radio color="secondary" />}
-                            />
-
-                            <FormControlLabel
-                                value="Female"
-                                label="Female"
-                                labelPlacement="end"
-                                control={<Radio color="secondary" />}
-                            />
-
-                            <FormControlLabel
-                                value="Others"
-                                label="Others"
-                                labelPlacement="end"
-                                control={<Radio color="secondary" />}
-                            />
-                        </RadioGroup>
-
-                        <FormControlLabel
-                            control={<Checkbox />}
-                            label="I have read and agree to the terms of service."
-                        />
+                        <input type="file" onChange={handleChange} />
                     </Grid>
                 </Grid>
-
-                <Button color="primary" variant="contained" type="submit">
+                <LoadingButton color="primary" variant="contained" type="submit">
                     <Icon>send</Icon>
-                    <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
-                </Button>
+                    <Span sx={{ pl: 1, textTransform: "capitalize" }}>Add product</Span>
+                </LoadingButton>
             </ValidatorForm>
         </div>
     );
 };
-
-export default SimpleForm;
+export default AddProduct;

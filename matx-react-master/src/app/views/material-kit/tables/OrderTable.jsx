@@ -17,7 +17,8 @@ import {
     CardContent,
     Card,
     CardHeader,
-    Typography
+    Typography,
+    useTheme
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -67,7 +68,6 @@ const OrderTable = () => {
         fetch('http://localhost:3000/admin/getorder').then((response) => {
             response.json().then((result) => {
                 setOrder(result);
-                // console.log(result);
             });
         });
     };
@@ -152,7 +152,27 @@ const OrderTable = () => {
     const clickDemo = (id) => {
         console.log(id);
     }
+    ///admin/deleteorder/:id
+    const handleDelete = (id) => {
+        if (window.confirm("Are you sure you want to delete this order?"))
+            try {
+                fetch('http://localhost:3000/admin/deleteorder/' + id, {
+                    method: 'DELETE',
+                }).then((response) => {
+                    response.json().then((result) => {
+                        console.log(result);
+                        getAllOrder();
+                    });
+                });
+                alert("Order Deleted");
 
+            } catch (error) {
+                console.log(error);
+            }
+        else {
+            console.log("Order not deleted");
+        }
+    }
     useEffect(() => {
         getAllOrder();
         console.log(productDetails)
@@ -167,7 +187,34 @@ const OrderTable = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-
+    const StyledTable = styled(Table)(({ theme }) => ({
+        whiteSpace: "pre",
+        "& thead": {
+            "& tr": { "& th": { paddingLeft: 0, paddingRight: 0 } },
+        },
+        "& tbody": {
+            "& tr": { "& td": { paddingLeft: 0, textTransform: "capitalize" } },
+        },
+        '& small': {
+            width: 50,
+            height: 15,
+            borderRadius: 500,
+            boxShadow: '0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.24)',
+        },
+    }));
+    const Small = styled('small')(({ bgcolor }) => ({
+        width: 50,
+        height: 15,
+        color: '#fff',
+        padding: '2px 8px',
+        borderRadius: '4px',
+        overflow: 'hidden',
+        background: bgcolor,
+        boxShadow: '0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 2px 0 rgba(0, 0, 0, 0.24)',
+    }));
+    const { palette } = useTheme();
+    const bgError = palette.error.main;
+    const bgPrimary = palette.primary.main;
     return (
         <Box width="100%" overflow="auto">
             <Button variant="contained" color="primary" onClick={() => getAllOrder()} >Re-Fresh</Button>
@@ -181,8 +228,6 @@ const OrderTable = () => {
                         <TableCell align="center">Product Order</TableCell>
                         <TableCell align="center">Total</TableCell>
                         <TableCell align="center">Status</TableCell>
-                        {/* <TableCell align="center">End Date</TableCell>
-                        <TableCell align="center">Description</TableCell> */}
                         <TableCell align="center">Action</TableCell>
                     </TableRow>
                 </TableHead>
@@ -195,13 +240,21 @@ const OrderTable = () => {
                             <TableCell align="center">{subscriber.cus_id.cus_address}</TableCell>
                             <TableCell align="center">{subscriber.pro_id.length}</TableCell>
                             <TableCell align="center">{subscriber.total}</TableCell>
-                            <TableCell align="center">{subscriber.status}</TableCell>
+                            {subscriber.status === "Đã giao hàng" ? (
+                                <TableCell align="center">
+                                    <Small bgcolor={bgPrimary}>{subscriber.status}</Small>
+                                </TableCell>
+                            ) : (
+                                <TableCell align="center">
+                                    <Small bgcolor={bgError}>{subscriber.status}</Small>
+                                </TableCell>
+                            )}
+                            {/* <TableCell align="center">{subscriber.status}</TableCell> */}
                             <TableCell align="center">
-                                <IconButton >
+                                <IconButton onClick={() => handleDelete(`${subscriber.id}`)}>
                                     <Icon color="error">close</Icon>
                                 </IconButton>
-                                {/*if status=="Đã giao hàng" disable button */}
-                                <IconButton onClick={() => handleClick(`${subscriber.id}`)}>
+                                <IconButton onClick={() => handleClick(`${subscriber.id}`)} >
                                     <Icon color="primary">search</Icon>
                                 </IconButton>
                             </TableCell>

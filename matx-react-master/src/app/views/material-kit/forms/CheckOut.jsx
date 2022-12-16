@@ -44,7 +44,7 @@ const FabIcon = styled(Fab)(() => ({
 }));
 
 ///admin/getall
-const ProductTable = () => {
+const CheckOut = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [open, setOpen] = useState(false);
@@ -58,35 +58,32 @@ const ProductTable = () => {
     }
 
     const [products, setProducts] = useState([]);
-
-    const getAllProducts = async () => {
-        fetch('http://localhost:3000/admin/getall').then((response) => {
-            response.json().then((result) => {
-                setProducts(result);
-                console.log(result);
+// /http://localhost:3000/client/getcart
+    const getCart = async (id) => {
+       try {
+         fetch('http://localhost:3000/client/getcart/' + id).then((response) => {
+              response.json().then((result) => {
+                 console.log(result);
+                    setProducts(result);
+                });
             });
-        });
+       } catch (error) {
+        console.log(error);
+       }
     };
-    // const state = {
-    //     name: "",
-    //     model: "",
-    //     price: "",
-    //     description: "",
-    //     quantity: "",
-    //     endDate: ""
-    // };
+
     const [name, setName] = useState("");
     const [model, setModel] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
     const [quantity, setQuantity] = useState("");
     const [endDate, setEndDate] = useState("");
-    ///admin/deleteproducts/:id
-    const deleteProduct = async (id) => {
+    ///client/deletecart/:id
+    const deleteCart = async (id) => {
         //confirm("Are you sure you want to delete this product?");
         if (window.confirm("Are you sure you want to delete this product?"))
             try {
-                fetch('http://localhost:3000/admin/deleteproducts/' + id, {
+                fetch('http://localhost:3000/client/deletecart/' + id, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -94,7 +91,7 @@ const ProductTable = () => {
                 }).then((response) => {
                     response.json().then((result) => {
                         console.log(result);
-                        getAllProducts();
+                        getCart();
                     });
                 });
             } catch (error) {
@@ -105,27 +102,23 @@ const ProductTable = () => {
         }
 
     };
+    // /client/updatecart/:id
     const updateProduct = async (id) => {
         if (window.confirm("Are you sure you want to update this product?"))
             try {
-                fetch('http://localhost:3000/admin/updateproducts/' + id, {
+                fetch('http://localhost:3000/client/updatecart/' + id, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(
                         {
-                            name: name,
-                            model: model,
-                            price: price,
-                            description: description,
                             quantity: quantity,
-                            endDate: endDate
                         })
                 }).then((response) => {
                     response.json().then((result) => {
                         console.log(result);
-                        getAllProducts();
+                        getCart();
                     })
                 });
                 alert("Product Updated Successfully");
@@ -138,30 +131,46 @@ const ProductTable = () => {
         }
     }
     // /admin/getproducts/:id and use handleClickOpen
+    // /client/getcartbyid/:id
     const [data, setData] = useState([]);
     const getProduct = async (id) => {
         console.log(id);
-        fetch('http://localhost:3000/admin/getproducts/' + id).then((response) => {
+        fetch('http://localhost:3000/client/getcartbyid/' + id).then((response) => {
             response.json().then((result) => {
                 console.log(result);
                 setData(result);
-                setName(result.name);
-                setModel(result.model);
-                setPrice(result.price);
-                setDescription(result.description);
                 setQuantity(result.quantity);
-                setEndDate(result.endDate);
-
                 handleClickOpen();
             });
         });
     };
-
+    ///client/checkout/:cus_id
+    // /client/checkout/:cus_id
+    const checkOut = async (id) => {
+        if (window.confirm("Are you sure you want to check out?"))
+            try {
+                fetch('http://localhost:3000/client/checkout/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                }).then((response) => {
+                    response.json().then((result) => {
+                        console.log(result);
+                        getCart();
+                    });
+                });
+                alert("Check Out Successfully");
+            } catch (error) {
+                console.log(error);
+            }
+        else {
+            console.log("not update");
+        }
+    }
 
     useEffect(() => {
-        getAllProducts();
+        getCart();
         console.log(products);
-    }, []);
+    }, [id]);
 
     const handleChangePage = (_, newPage) => {
         setPage(newPage);
@@ -171,10 +180,16 @@ const ProductTable = () => {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-
+    const [id, setId] = useState("");
     return (
         <Box width="100%" overflow="auto">
-            <Button variant="contained" color="primary" onClick={() => getAllProducts()} >ReFresh</Button>
+            <TextField
+                fullWidth label="Customer ID" variant="outlined"  style={{ marginBottom: "1rem" }} 
+                onChange={(e) => setId(e.target.value)}
+                />
+            <Button variant="contained" color="primary" onClick={() => getCart(id)} >Get Cart</Button>
+            <Button variant="contained" color="primary" onClick={() => checkOut(id)} style={{ marginLeft: '0.8rem' }}>Check-Out</Button>
+ 
             {/*filter search text */}
 
 
@@ -182,12 +197,10 @@ const ProductTable = () => {
                 <TableHead>
                     <TableRow>
                         <TableCell align="center">ID</TableCell>
-                        <TableCell align="center">Name</TableCell>
-                        <TableCell align="center">Model</TableCell>
+                        <TableCell align="center">Customer ID</TableCell>
+                        <TableCell align="center">Product ID</TableCell>
                         <TableCell align="center">Quantity</TableCell>
-                        <TableCell align="center">Price</TableCell>
-                        <TableCell align="center">End Date</TableCell>
-                        <TableCell align="center">Description</TableCell>
+                        <TableCell align="center">Status</TableCell>
                         <TableCell align="center">Action</TableCell>
                     </TableRow>
                 </TableHead>
@@ -197,14 +210,12 @@ const ProductTable = () => {
                         .map((subscriber, index) => (
                             <TableRow key={index}>
                                 <TableCell align="center">{subscriber.id}</TableCell>
-                                <TableCell align="center">{subscriber.name}</TableCell>
-                                <TableCell align="center">{subscriber.model}</TableCell>
+                                <TableCell align="center">{subscriber.cus_id}</TableCell>
+                                <TableCell align="center">{subscriber.pro_id}</TableCell>
                                 <TableCell align="center">{subscriber.quantity}</TableCell>
-                                <TableCell align="center">{subscriber.price}</TableCell>
-                                <TableCell align="center">{subscriber.endDate}</TableCell>
-                                <TableCell align="center">{subscriber.description}</TableCell>
+                                <TableCell align="center">{subscriber.status}</TableCell>
                                 <TableCell align="center">
-                                    <IconButton onClick={() => deleteProduct(`${subscriber.id}`)}>
+                                    <IconButton onClick={() => deleteCart(`${subscriber.id}`)}>
                                         <Icon color="error">close</Icon>
                                     </IconButton>
                                     <IconButton onClick={() => getProduct(`${subscriber.id}`)}>
@@ -233,17 +244,7 @@ const ProductTable = () => {
                 <SimpleCard title="Product Details">
                     {/*get data and TextField to type new data */}
                     <TextField
-                        autoFocus margin="dense" id="name" label="Name" type="text" fullWidth variant="standard" value={name} onChange={(e) => setName(e.target.value)} />
-                    <TextField
-                        autoFocus margin="dense" id="model" label="Model" type="text" fullWidth variant="standard" value={model} onChange={(e) => setModel(e.target.value)} />
-                    <TextField
-                        autoFocus margin="dense" id="price" label="Price" type="text" fullWidth variant="standard" value={price} onChange={(e) => setPrice(e.target.value)} />
-                    <TextField
-                        autoFocus margin="dense" id="description" label="Description" type="text" fullWidth variant="standard" value={description} onChange={(e) => setDescription(e.target.value)} />
-                    <TextField
                         autoFocus margin="dense" id="quantity" label="Quantity" type="text" fullWidth variant="standard" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                    <TextField
-                        autoFocus margin="dense" id="endDate" label="End Date" type="text" fullWidth variant="standard" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </SimpleCard>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
@@ -283,4 +284,4 @@ const ProductTable = () => {
     );
 };
 
-export default ProductTable;
+export default CheckOut;

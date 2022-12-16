@@ -1,5 +1,6 @@
 export const navigations = [
   { name: 'Dashboard', path: '/dashboard/default', icon: 'dashboard' },
+  { name: 'Icons', path: '/material/icons', iconText: 'I' },
   { label: 'PAGES', type: 'label' },
   {
     name: 'Session/Auth',
@@ -11,38 +12,38 @@ export const navigations = [
       { name: 'Error', iconText: '404', path: '/session/404' },
     ],
   },
-  { label: 'Components', type: 'label' },
+  { label: 'Add Product', type: 'label' },
   {
     name: 'Components',
     icon: 'favorite',
     badge: { value: '30+', color: 'secondary' },
     children: [
-      { name: 'Auto Complete', path: '/material/autocomplete', iconText: 'A' },
-      { name: 'Buttons', path: '/material/buttons', iconText: 'B' },
-      { name: 'Checkbox', path: '/material/checkbox', iconText: 'C' },
-      { name: 'Dialog', path: '/material/dialog', iconText: 'D' },
-      { name: 'Expansion Panel', path: '/material/expansion-panel', iconText: 'E' },
-      { name: 'Form', path: '/material/form', iconText: 'F' },
-      { name: 'Icons', path: '/material/icons', iconText: 'I' },
-      { name: 'Menu', path: '/material/menu', iconText: 'M' },
-      { name: 'Progress', path: '/material/progress', iconText: 'P' },
-      { name: 'Radio', path: '/material/radio', iconText: 'R' },
-      { name: 'Switch', path: '/material/switch', iconText: 'S' },
-      { name: 'Slider', path: '/material/slider', iconText: 'S' },
-      { name: 'Snackbar', path: '/material/snackbar', iconText: 'S' },
-      { name: 'Table', path: '/material/table1', iconText: 'T' },
-      { name: 'Table', path: '/material/table2', iconText: 'T' },
+      { name: 'Add Product', path: '/material/form', iconText: 'F' },
     ],
   },
+  { label: 'Table', type: 'label' },
   {
-    name: 'Charts',
-    icon: 'trending_up',
-    children: [{ name: 'Echarts', path: '/charts/echarts', iconText: 'E' }],
+    name: 'Components',
+    icon: 'favorite',
+    badge: { value: '30+', color: 'secondary' },
+    children: [
+      // { name: 'Buttons', path: '/material/buttons', iconText: 'B' },
+      // { name: 'Dialog', path: '/material/dialog', iconText: 'D' },
+      
+     
+      { name: 'All Order', path: '/material/table1', iconText: 'T' },
+      { name: 'All Product', path: '/material/table2', iconText: 'T' },
+      { name: 'All Customer', path: '/material/table3', iconText: 'T' },
+    ],
   },
+  { label: 'Order Page', type: 'label' },
   {
-    name: 'Documentation',
-    icon: 'launch',
-    type: 'extLink',
-    path: 'http://demos.ui-lib.com/matx-react-doc/',
+    name: 'Components',
+    icon: 'favorite',
+    badge: { value: '30+', color: 'secondary' },
+    children: [
+      { name: 'Add to cart', path: '/material/form1', iconText: 'B' },
+      { name: 'Check Out', path: '/material/form2', iconText: 'B' },
+    ],
   },
 ];

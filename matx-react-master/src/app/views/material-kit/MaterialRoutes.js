@@ -3,10 +3,13 @@ import { lazy } from 'react';
 
 const AppOrderTable = Loadable(lazy(() => import('./tables/AppOrderTable')));
 const AppProductTable = Loadable(lazy(() => import('./tables/AppProductTable')));
+const AppCustomer = Loadable(lazy(() => import('./tables/AppCustomer')));
 
-const AppForm = Loadable(lazy(() => import('./forms/AppForm')));
+const AppFormAdd = Loadable(lazy(() => import('./forms/AppFormAdd')));
 const AppButton = Loadable(lazy(() => import('./buttons/AppButton')));
 const AppIcon = Loadable(lazy(() => import('./icons/AppIcon')));
+const AppCheckOut = Loadable(lazy(() => import('./forms/AppCheckOut')));
+const AppAddCart = Loadable(lazy(() => import('./forms/AppAddCart')));
 // const AppProgress = Loadable(lazy(() => import('./AppProgress')));
 // const AppMenu = Loadable(lazy(() => import('./menu/AppMenu')));
 // const AppCheckbox = Loadable(lazy(() => import('./checkbox/AppCheckbox')));
@@ -20,6 +23,10 @@ const AppDialog = Loadable(lazy(() => import('./dialog/AppDialog')));
 
 const materialRoutes = [
   {
+    path: '/material/table3',
+    element: <AppCustomer />,
+  },
+  {
     path: '/material/table1',
     element: <AppOrderTable />,
   },
@@ -29,8 +36,18 @@ const materialRoutes = [
   },
   {
     path: '/material/form',
-    element: <AppForm />,
+    element: <AppFormAdd />,
   },
+  //
+  {
+    path: '/material/form2',
+    element: <AppCheckOut />,
+  },
+  {
+    path: '/material/form1',
+    element: <AppAddCart />,
+  },
+  //
   {
     path: '/material/buttons',
     element: <AppButton />,

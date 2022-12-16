@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Breadcrumb, SimpleCard } from "app/components";
-import SimpleForm from "./SimpleForm";
+import AddProduct from "./AddProduct";
 import StepperForm from "./StepperForm";
 
 const Container = styled("div")(({ theme }) => ({
@@ -13,7 +13,7 @@ const Container = styled("div")(({ theme }) => ({
     },
 }));
 
-const AppAddProduct = () => {
+const AppFormAdd = () => {
     return (
         <Container>
             <Box className="breadcrumb">
@@ -22,15 +22,11 @@ const AppAddProduct = () => {
 
             <Stack spacing={3}>
                 <SimpleCard title="Simple Form">
-                    <SimpleForm />
-                </SimpleCard>
-
-                <SimpleCard title="stepper form">
-                    <StepperForm />
+                    <AddProduct />
                 </SimpleCard>
             </Stack>
         </Container>
     );
 };
 
-export default AppAddProduct;
+export default AppFormAdd;

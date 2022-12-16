@@ -31,6 +31,7 @@ app.post('/admin/addproducts', (req, res) => {
             quantity: req.body.quantity,
             endDate: req.body.endDate,
             description: req.body.description,
+            image: req.body.image,
         };
         const addproducts = db.collection('products').doc(id).set(modelJson);
         res.send(addproducts);
@@ -148,6 +149,46 @@ app.get('/admin/getallorder', async (req, res) => {
     } catch (err) {
         res.send(err);
         console.log(err);
+    }
+});
+
+//admin get all customer
+app.get('/admin/getallcustomer', async (req, res) => {
+    try {
+        const userRef = db.collection('customer');
+        const response = await userRef.get();
+        let responseArr = [];
+        response.forEach(doc => {
+            responseArr.push(doc.data());
+        }
+        );
+        res.send(responseArr);
+    } catch (error) {
+        console.log(error);
+        req.send(error);
+    }
+});
+//admin get details of a customer
+app.get('/admin/getcustomer/:id', async (req, res) => {
+    try {
+        const userRef = db.collection('customer').doc(req.params.id);
+        const response = await userRef.get();
+        res.send(response.data());
+
+    } catch (error) {
+        console.log(error);
+        req.send(error);
+    }
+});
+//admin delete a customer
+app.delete('/admin/deletecustomer/:id', async (req, res) => {
+    try {
+        const userRef = db.collection('customer').doc(req.params.id);
+        const response = await userRef.delete();
+        res.send(response);
+    } catch (error) {
+        req.send(error);
+        console.log(error);
     }
 });
 //admin getorder details with product id 
@@ -277,7 +318,7 @@ app.post('/client/addtocart', async (req, res) => {
             cus_id: req.body.cus_id,
             pro_id: req.body.pro_id,
             quantity: req.body.quantity,
-            status: req.body.status,
+            status:  "cart",
         };
         const addtocart = db.collection('cart').doc(id).set(modelJson);
         res.send(addtocart + "đã thêm vào giỏ hàng");
@@ -287,42 +328,95 @@ app.post('/client/addtocart', async (req, res) => {
     }
 });
 //find list of cart by cus_id and sum total price
-app.get('/client/getcart', async (req, res) => {
-    try {
-        const userRef = db.collection('cart');
-        //find in cart where cus_id = req.body.cus_id
-        const response = await userRef.where('cus_id', '==', req.body.cus_id).get();
-        let responseArr = [];
-        response.forEach(doc => {
-            responseArr.push(doc.data());
-        });
-        const product_id = responseArr.map((item) => item.pro_id);
-        const product_quantity = responseArr.map((item) => item.quantity);
-        //get detail of product by pro_id
-        let responseArr1 = [];
+// app.get('/client/getcart', async (req, res) => {
+//     try {
+//         const userRef = db.collection('cart');
+//         //find in cart where cus_id = req.body.cus_id
+//         const response = await userRef.where('cus_id', '==', req.body.cus_id).get();
+//         let responseArr = [];
+//         response.forEach(doc => {
+//             responseArr.push(doc.data());
+//         });
+//         const product_id = responseArr.map((item) => item.pro_id);
+//         const product_quantity = responseArr.map((item) => item.quantity);
+//         //get detail of product by pro_id
+//         let responseArr1 = [];
 
-        const productRef = db.collection('products');
-        const price = '';
-        for (let i = 0; i < product_id.length; i++) {
-            const response = await productRef.where('id', '==', product_id[i]).get();
-            response.forEach(doc => {
-                responseArr.push(doc.data());
-                responseArr1.push(doc.data().price);
-            });
-            this.price = responseArr1[i];
-        }
-        let total = 0;
-        let arraySum = [];
-        for (let i = 0; i < product_id.length; i++) {
-            let sum = responseArr1[i] * product_quantity[i];
-            arraySum.push(sum);
-            total += arraySum[i];
-        }
-        responseArr.push({ total: total });
-        res.send(responseArr);
-    } catch (err) {
-        res.send(err);
-        console.log(err);
+//         const productRef = db.collection('products');
+//         const price = '';
+//         for (let i = 0; i < product_id.length; i++) {
+//             const response = await productRef.where('id', '==', product_id[i]).get();
+//             response.forEach(doc => {
+//                 responseArr.push(doc.data());
+//                 responseArr1.push(doc.data().price);
+//             });
+//             this.price = responseArr1[i];
+//         }
+//         let total = 0;
+//         let arraySum = [];
+//         for (let i = 0; i < product_id.length; i++) {
+//             let sum = responseArr1[i] * product_quantity[i];
+//             arraySum.push(sum);
+//             total += arraySum[i];
+//         }
+//         responseArr.push({ total: total });
+//         res.send(responseArr);
+//     } catch (err) {
+//         res.send(err);
+//         console.log(err);
+//     }
+// });
+app.get('/client/getcart/:id', async (req, res) => {
+     try {
+         const userRef = db.collection('cart');
+         const response = await userRef.where('cus_id', '==', req.params.id).get();
+         let responseArr = [];
+         response.forEach(doc => {
+             responseArr.push(doc.data());
+         });
+         
+         res.send(responseArr);
+     } catch (error) {
+        
+     }
+});
+
+//client update cart
+// app.put('/client/updatecart', async (req, res) => {
+//     try {
+//         const userRef = db.collection('cart').doc(req.body.id);
+//         const response = await userRef.update({
+//             quantity: req.body.quantity
+//         });
+//         res.send(response);
+//     } catch (error) {
+//         res.send(error);
+//         console.log(error);
+//     }
+// });
+
+app.put('/client/updatecart/:id', async (req, res) => {
+    try { 
+        const userRef = db.collection('cart').doc(req.params.id);
+        const response = await userRef.update({
+            quantity: req.body.quantity
+        });
+        res.send(response);
+    } catch (error) {
+        res.send(error);
+        console.log(error);
+    }
+});
+
+//client get cart by id
+app.get('/client/getcartbyid/:id', async (req, res) => {
+    try {
+        const userRef = db.collection('cart').doc(req.params.id);
+        const response = await userRef.get();
+        res.send(response.data());
+    } catch (error) {
+        res.send(error);
+        console.log(error);
     }
 });
 
@@ -340,11 +434,11 @@ app.delete('/client/deletecart/:id', async (req, res) => {
 });
 
 //client checkout order
-app.post('/client/checkout', async (req, res) => {
+app.post('/client/checkout/:cus_id', async (req, res) => {
     try {
         const userRef = db.collection('cart');
         //find in cart where cus_id = req.body.cus_id
-        const response = await userRef.where('cus_id', '==', req.body.cus_id).get();
+        const response = await userRef.where('cus_id', '==', req.params.cus_id).get();
         let responseArr = [];
         response.forEach(doc => {
             responseArr.push(doc.data());
@@ -373,7 +467,7 @@ app.post('/client/checkout', async (req, res) => {
         }
         const modelJson = {
             id: Date.now().toString(),
-            cus_id: req.body.cus_id,
+            cus_id: req.params.cus_id,
             pro_id: product_id,
             quantity: product_quantity,
             total: total,
